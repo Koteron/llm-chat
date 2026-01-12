@@ -87,7 +87,7 @@ The system consists of:
 
 ## Running the Project
 
-1. Pull a model with "docker model pull < name >" and set up env file
-2. Build and start containers with "docker compose up"
+1. Pull a model with `docker model pull < name >` and set up env file
+2. Build and start containers with `docker compose up`
 
 Exact commands depend on your local setup and are intentionally left configurable.
