@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { sendMessage, getConversationDetail, getConversationList, createConversation } from "../services/api";
 import useAuthStore from '../state/useAuthStore';
+import { useNavigate } from "react-router-dom";
+import { v4 as uuidv4 } from "uuid";
 
 function Chats() {
   const [conversations, setConversations] = useState([]);
@@ -9,21 +11,43 @@ function Chats() {
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const { access } = useAuthStore();
+  const { access, refresh, doRefresh } = useAuthStore();
+  const navigate = useNavigate();
 
   const loadConversations = async () => {
-    setConversations(getConversationList(access));
+    try {
+      const data = await getConversationList(access);
+      setConversations(data || []);
+    }
+    catch(error) {
+      if (error.response?.status == 401) {
+        if (refresh == null) {
+          navigate("/login")
+        }
+        try {
+          doRefresh(refresh)
+        }
+        catch(error) {
+          navigate("/login")
+        }
+      }
+    }
   };
-
+  
   const handleOpenConversation = async (conv) => {
     setActiveConversation(conv);
     setLoading(true);
-    setMessages(getConversationDetail(conv.id, access) || []);
+
+    const data = await getConversationDetail(conv.id, access);
+    setMessages(data["messages"] || []);
+
     setLoading(false);
   };
 
   const handleCreateConversation = async () => {
-    setConversations([createConversation("New conversation", access), ...conversations]);
+    const data = await createConversation("New conversation", access);
+
+    setConversations((prev) => [data, ...prev]);
     setActiveConversation(data);
     setMessages([]);
   };
@@ -31,21 +55,34 @@ function Chats() {
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !activeConversation) return;
 
-    setMessages([...messages, sendMessage(newMessage, activeConversation.id, access)]);
+    const response = await sendMessage(
+      newMessage,
+      activeConversation.id,
+      access
+    );
+    
+    setMessages((prev) => [...prev, {text: newMessage, created_at: response.prompt_created_at}]);
+    setMessages((prev) => [...prev, {text: response.reply, created_at: response.prompt_created_at}]);
     setNewMessage("");
   };
 
-  /* ---------------- lifecycle ---------------- */
-
   useEffect(() => {
+    if (access == null) {
+      if (refresh == null) {
+        navigate("/login")
+      }
+      try {
+        doRefresh(refresh)
+      }
+      catch(error) {
+        navigate("/login")
+      }
+    }
     loadConversations();
   }, []);
 
-  /* ---------------- render ---------------- */
-
   return (
     <div style={styles.page}>
-      {/* Sidebar */}
       <div style={styles.sidebar}>
         <button onClick={handleCreateConversation} style={styles.newButton}>
           + New conversation
@@ -66,7 +103,6 @@ function Chats() {
         ))}
       </div>
 
-      {/* Chat window */}
       <div style={styles.chat}>
         {!activeConversation ? (
           <p>Select or create a conversation</p>
@@ -79,7 +115,7 @@ function Chats() {
                 <p>No messages yet</p>
               ) : (
                 messages.map((m) => (
-                  <div key={m.id} style={styles.message}>
+                  <div key={m.created_at} style={styles.message}>
                     {m.text}
                   </div>
                 ))
@@ -101,8 +137,6 @@ function Chats() {
     </div>
   );
 }
-
-/* ---------------- styles ---------------- */
 
 const styles = {
   page: {

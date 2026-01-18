@@ -26,5 +26,10 @@ def generate_llm_response(messages):
         model=os.getenv("AI_MODEL"),
         messages=llm_messages
     )
+    while (response.choices[0].message.content == ""):
+        response = client.chat.completions.create(
+            model=os.getenv("AI_MODEL"),
+            messages=llm_messages
+        )
 
     return response.choices[0].message.content

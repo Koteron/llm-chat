@@ -8,7 +8,7 @@ const api = axios.create({
 
 export const loginUser = async (username, password) => {
   try {
-    const response = await api.post('/token/create', {
+    const response = await api.post('/auth/jwt/create/', {
       "username": username,
       "password": password,
     });
@@ -20,10 +20,21 @@ export const loginUser = async (username, password) => {
 
 export const registerUser = async (email, login, password) => {
   try {
-    const response = await api.post('/users/register', {
+    const response = await api.post('/auth/users/register/', {
       "email": email,
       "login": login,
       "password": password,
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const refreshToken = async (refresh) => {
+  try {
+    const response = await api.post('/auth/jwt/refresh/', {
+      "refresh": refresh,
     });
     return response.data;
   } catch (error) {

@@ -1,5 +1,5 @@
 {
-  "name": "frontend",
+  "name": "my-app",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -11,6 +11,7 @@
     "start": "craco start",
     "start:polling": "CHOKIDAR_USEPOLLING=true react-scripts start",
     "test": "jest",
+    "sonar": "sonar-scanner",
     "coverage": "jest --coverage"
   },
   "dependencies": {
@@ -23,6 +24,7 @@
     "react-router-dom": "^7.6.1",
     "react-testing-library": "^8.0.1",
     "recharts": "^2.15.3",
+    "uuid": "^13.0.0",
     "zustand": "^5.0.5"
   },
   "devDependencies": {

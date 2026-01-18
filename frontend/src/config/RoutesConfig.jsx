@@ -19,7 +19,7 @@ const routesConfig = [
   {
     element: <AuthRedirectedRoute route={'/login'} requireLogin={true} />,
     children: [
-      { path: "/chat", element: <Chats /> },
+      { path: "/chats", element: <Chats /> },
     ]
   },
 ];
